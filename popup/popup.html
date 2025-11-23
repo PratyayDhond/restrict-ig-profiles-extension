@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instagram User Blocker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <h1>🔒 Instagram Blocker</h1>
+      <p class="subtitle">Manage your blocked users</p>
+    </header>
+
+    <main class="popup-main">
+      <!-- Current page status -->
+      <section class="current-status">
+        <div id="currentPageInfo" class="info-box">
+          <p id="currentPageText">Loading...</p>
+        </div>
+      </section>
+
+      <!-- Quick stats -->
+      <section class="stats">
+        <div class="stat-card">
+          <div class="stat-number" id="blockedCount">0</div>
+          <div class="stat-label">Blocked Users</div>
+        </div>
+      </section>
+
+      <!-- Blocked users list -->
+      <section class="blocked-list">
+        <h2>Blocked Users</h2>
+        <div id="blockedUsersList" class="user-list">
+          <p class="empty-state">No blocked users yet</p>
+        </div>
+      </section>
+
+      <!-- Actions -->
+      <section class="actions">
+        <button id="openSettings" class="btn btn-secondary">
+          ⚙️ Settings
+        </button>
+        <button id="exportData" class="btn btn-secondary">
+          📥 Export Blocklist
+        </button>
+      </section>
+    </main>
+
+    <footer class="popup-footer">
+      <p>v1.0.0</p>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

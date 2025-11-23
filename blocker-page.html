@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Blocked - Instagram Blocker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Dark greyscale theme */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1b1b1b 0%, #0f0f0f 100%);
+      color: #e6e6e6;
+      text-align: center;
+      padding: 20px;
+      filter: grayscale(100%);
+    }
+
+    .container {
+      max-width: 520px;
+      width: 100%;
+      padding: 36px;
+      background: rgba(20, 20, 20, 0.75);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .icon {
+      font-size: 72px;
+      margin-bottom: 18px;
+      animation: pulse 2s ease-in-out infinite;
+      filter: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    h1 {
+      font-size: 30px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #f5f5f5;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+
+    .username {
+      font-size: 18px;
+      margin-bottom: 18px;
+      opacity: 0.95;
+      font-weight: 500;
+      color: #dcdcdc;
+    }
+
+    .message {
+      font-size: 16px;
+      margin-bottom: 26px;
+      line-height: 1.5;
+      opacity: 0.9;
+      color: #cfcfcf;
+    }
+
+    .countdown-container {
+      margin-bottom: 26px;
+    }
+
+    .countdown-label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1.6px;
+      opacity: 0.7;
+      margin-bottom: 8px;
+      color: #bdbdbd;
+    }
+
+    .countdown {
+      font-size: 64px;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      font-variant-numeric: tabular-nums;
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .redirect-info {
+      font-size: 13px;
+      opacity: 0.75;
+      margin-top: 16px;
+      color: #bdbdbd;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 2px;
+      margin-top: 18px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: rgba(255,255,255,0.85);
+      border-radius: 2px;
+      transition: width 0.2s linear;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container {
+        padding: 24px 18px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      .username {
+        font-size: 16px;
+      }
+
+      .message {
+        font-size: 15px;
+      }
+
+      .countdown {
+        font-size: 48px;
+      }
+
+      .icon {
+        font-size: 56px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🔒</div>
+    <h1>User Blocked</h1>
+    <div class="username" id="usernameDisplay">@username</div>
+    <div class="message" id="messageDisplay">Remember why you chose to do this!</div>
+
+    <div class="countdown-container">
+      <div class="countdown-label">
+        Redirecting to <span id="redirectTargetDisplay"></span> in
+      </div>
+      <div class="countdown" id="countdown">3</div>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 100%;"></div>
+    </div>
+
+    <div class="redirect-info">
+      You will be redirected to Instagram homepage
+    </div>
+  </div>
+
+  <script>
+    // Parse URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const username = params.get('username') || 'user';
+
+    // Delay: default to 3 if the query param is absent or invalid
+    const delay = (() => {
+      const raw = params.get('delay');
+      if (raw === null) return 3; // param missing => default 3
+      const n = parseInt(raw, 10);
+      return Number.isFinite(n) && n >= 0 ? n : 3;
+    })();
+
+    // Message fallback
+    const message = params.get('message') || 'Remember why you chose to do this!';
+
+    // Helpers - normalize to absolute URL, prefer https when scheme missing
+    const normalizeUrl = (maybeUrl) => {
+      if (!maybeUrl) return null;
+      const s = String(maybeUrl).trim();
+
+      // If string starts with a scheme (http:, https:, mailto:, etc.) treat as absolute.
+      const hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(s);
+      // If it looks like a path (starts with / or ./ or ../) resolve relative to current location.
+      const looksLikePath = s.startsWith('/') || s.startsWith('./') || s.startsWith('../');
+
+      try {
+        if (hasScheme || looksLikePath) {
+          // allowed to resolve relative URLs but do not treat bare hostnames as relative
+          return new URL(s, window.location.href);
+        }
+        // For bare hostnames like "instagram.com" or "example.com/path" force https
+        return new URL('https://' + s);
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const tryOrigin = (maybeUrl) => {
+      const u = normalizeUrl(maybeUrl);
+      return u ? u.origin : null;
+    };
+
+    const tryFullUrl = (maybeUrl) => {
+      const u = normalizeUrl(maybeUrl);
+      return u ? u.href : null;
+    };
+
+    // Determine redirect target with priority:
+    let redirectTarget = null;
+    let redirectionLinkParam = params.get('redirectionLink') || params.get('redirectionlink') || params.get('redirectLink');
+    if (redirectionLinkParam) {
+      // If the user put a hash after the query string (e.g. ...&redirectionLink=example.com#/page)
+      // browsers treat the '#' as the page fragment and it won't be part of the query param.
+      // As a convenience: if the page has a hash and the param does NOT include one,
+      // append the page hash to the param (helps when user forgot to encode '#').
+      if (window.location.hash && !redirectionLinkParam.includes('#')) {
+        // avoid duplicate trailing slash
+        redirectionLinkParam = redirectionLinkParam.replace(/\/$/, '') + window.location.hash;
+      }
+      // Use the full URL (scheme+host+path+hash) for redirectionLink
+      redirectTarget = tryFullUrl(redirectionLinkParam);
+    }
+
+    let payloadParam = params.get('payload'); // keep for logging
+    if (!redirectTarget && payloadParam) {
+      try {
+        let payload;
+        try {
+          payload = JSON.parse(payloadParam);
+        } catch {
+          // not JSON — treat as raw string
+          payload = payloadParam;
+        }
+
+        if (typeof payload === 'object' && payload !== null) {
+          redirectTarget =
+            tryOrigin(payload.url) ||
+            tryOrigin(payload.redirect) ||
+            tryOrigin(payload.target) ||
+            tryOrigin(payload.origin) ||
+            null;
+        } else if (typeof payload === 'string') {
+          redirectTarget = tryOrigin(payload);
+        }
+      } catch (e) {
+        redirectTarget = null;
+      }
+    }
+
+    // Next priority: explicit ?redirect=... (origin)
+    if (!redirectTarget && params.get('redirect')) {
+      console.log(redirectTarget)
+      redirectTarget = tryOrigin(params.get('redirect'));
+    }
+
+    // Next: use current page origin (useful for dev/localhost)
+    if (!redirectTarget && window.location && window.location.origin && !window.location.origin.startsWith('file:')) {
+      redirectTarget = window.location.origin;
+    }
+
+    // Final fallback
+    if (!redirectTarget) {
+      redirectTarget = 'https://instagram.com';
+    }
+
+    // Update UI
+    document.getElementById('usernameDisplay').textContent = `@${username}`;
+    document.getElementById('messageDisplay').textContent = message;
+    document.getElementById('countdown').textContent = delay;
+
+    // Inject redirect target into the label (nicer display)
+    let displayTarget = redirectTarget.replace(/^https?:\/\//, '');
+    try {
+      const u = new URL(redirectTarget);
+      displayTarget = u.host + (u.pathname && u.pathname !== '/' ? u.pathname : '');
+    } catch (e) {
+      // ignore
+    }
+    const rtEl = document.getElementById('redirectTargetDisplay');
+    if (rtEl) rtEl.textContent = displayTarget;
+
+    // If zero delay, redirect immediately
+    if (delay === 0) {
+      window.location.href = redirectTarget;
+    } else {
+      // Countdown logic
+      let remaining = delay;
+      const countdownEl = document.getElementById('countdown');
+      const progressFill = document.getElementById('progressFill');
+
+      // Initialize progress (full -> empty behavior)
+      progressFill.style.width = '100%';
+
+      // Update progress bar at a small interval
+      const progressInterval = setInterval(() => {
+        const pct = delay > 0 ? (remaining / delay) * 100 : 0;
+        progressFill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+      }, 100);
+
+      // Countdown timer
+      const interval = setInterval(() => {
+        remaining--;
+        countdownEl.textContent = remaining;
+
+        if (remaining <= 0) {
+          clearInterval(interval);
+          clearInterval(progressInterval);
+          countdownEl.textContent = '✓';
+
+          // Redirect after short delay to show checkmark
+          setTimeout(() => {
+            window.location.href = redirectTarget;
+          }, 500);
+        }
+      }, 1000);
+
+      // Add keyboard shortcut to skip countdown (press Escape)
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          clearInterval(interval);
+          clearInterval(progressInterval);
+          window.location.href = redirectTarget;
+        }
+      });
+    }
+
+    // Log for debugging
+    console.log('Blocker page loaded', {
+      username,
+      delay,
+      message,
+      redirectionLinkParam,
+      payloadParam,
+      redirectTarget
+    });
+  </script>
+</body>
+</html>

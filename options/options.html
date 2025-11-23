@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instagram Blocker - Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="options-container">
+    <header class="options-header">
+      <h1>🔒 Instagram User Blocker</h1>
+      <p class="version">Version 1.0.0 - MVP</p>
+    </header>
+
+    <main class="options-main">
+      <!-- Settings Section -->
+      <section class="settings-section">
+        <h2>Settings</h2>
+        
+        <div class="setting-group">
+          <label for="redirectDelay">
+            <strong>Redirect Delay (seconds)</strong>
+            <span class="help-text">How long to show blocker page before redirecting</span>
+          </label>
+          <input type="number" id="redirectDelay" min="1" max="60" value="3">
+        </div>
+
+        <div class="setting-group">
+          <label for="blockerPageUrl">
+            <strong>Blocker Page URL</strong>
+            <span class="help-text">Your external blocker page (Cloudflare Pages/GitHub Pages)</span>
+          </label>
+          <input type="url" id="blockerPageUrl" placeholder="https://yourdomain.pages.dev/blocker">
+        </div>
+
+        <div class="setting-group">
+          <label for="redirectTarget">
+            <strong>Redirect Target URL</strong>
+            <span class="help-text">Where to redirect after countdown</span>
+          </label>
+          <input type="url" id="redirectTarget" value="https://instagram.com">
+        </div>
+
+        <div class="setting-group">
+          <label for="blockedMessage">
+            <strong>Blocker Message</strong>
+            <span class="help-text">Message to display on blocker page</span>
+          </label>
+          <input type="text" id="blockedMessage" placeholder="Stay focused on what matters">
+        </div>
+
+        <div class="setting-group checkbox-group">
+          <label>
+            <input type="checkbox" id="enableIncognito" checked>
+            <span>Enable in Incognito Mode</span>
+          </label>
+          <span class="help-text">Allow extension to work in private browsing</span>
+        </div>
+
+        <button id="saveSettings" class="btn btn-primary">Save Settings</button>
+        <div id="saveStatus" class="status-message"></div>
+      </section>
+
+      <!-- Backup & Restore Section -->
+      <section class="settings-section">
+        <h2>Backup & Restore</h2>
+        
+        <div class="backup-actions">
+          <button id="exportBtn" class="btn btn-secondary">
+            📥 Export Blocklist
+          </button>
+          <button id="importBtn" class="btn btn-secondary">
+            📤 Import Blocklist
+          </button>
+          <input type="file" id="importFile" accept=".json" style="display: none;">
+        </div>
+
+        <div class="info-box">
+          <p><strong>Export:</strong> Download your blocklist as JSON file</p>
+          <p><strong>Import:</strong> Restore from previously exported file</p>
+          <p class="warning">⚠️ Importing will merge with existing blocklist</p>
+        </div>
+      </section>
+
+      <!-- Blocked Users Management -->
+      <section class="settings-section">
+        <h2>Blocked Users</h2>
+        
+        <div class="blocked-stats">
+          <p>Total blocked users: <strong id="totalBlocked">0</strong></p>
+        </div>
+
+        <div id="blockedUsersList" class="blocked-users-grid">
+          <p class="empty-state">No blocked users yet</p>
+        </div>
+
+        <button id="clearAllBtn" class="btn btn-danger">
+          Clear All Blocked Users
+        </button>
+      </section>
+
+      <!-- About Section -->
+      <section class="settings-section">
+        <h2>About</h2>
+        
+        <div class="about-content">
+          <p><strong>Instagram User Blocker</strong> helps you maintain focus and productivity by blocking specific Instagram users.</p>
+          
+          <ul class="feature-list">
+            <li>✓ Block user profiles with one click</li>
+            <li>✓ Custom blocker page with countdown</li>
+            <li>✓ Export/import blocklist</li>
+            <li>✓ Incognito mode support</li>
+            <li>✓ Privacy-focused (all data stored locally)</li>
+          </ul>
+
+          <div class="links">
+            <a href="https://github.com/yourusername/instagram-blocker" target="_blank">GitHub Repository</a>
+            <a href="https://github.com/yourusername/instagram-blocker/issues" target="_blank">Report Issues</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="options-footer">
+      <p>Made with focus and privacy in mind 🔒</p>
+    </footer>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
